@@ -1,0 +1,110 @@
+<!DOCTYPE html>
+<html lang="es">
+  <head>
+    <meta charset="UTF-8" />
+
+    <!-- JQuery HTTPS -->
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+
+    <!-- JustGage + Raphael HTTPS -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/raphael/2.3.0/raphael.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/justgage/1.3.5/justgage.min.js"></script>
+
+    <style>
+      body {
+        font-family: Arial;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        margin-top: 40px;
+      }
+
+      #contenedor {
+        display: flex;
+        gap: 40px;
+        justify-content: center;
+        margin-top: 20px;
+      }
+
+      h2 {
+        text-align: center;
+        margin-bottom: 10px;
+      }
+    </style>
+
+    <script>
+      // -----------------------------
+      // CONFIGURA TUS DATOS
+      // -----------------------------
+      const accessToken = "f7c5e94de0f78646cf0be91d796878fe4a245100";
+      const deviceID = "0a10aced202194944a067814";
+
+      const urlTemp = `https://api.particle.io/v1/devices/${deviceID}/temp`;
+      const urlHum = `https://api.particle.io/v1/devices/${deviceID}/hum`;
+
+      // -----------------------------
+      // FUNCIÓN PARA LEER VARIABLES
+      // -----------------------------
+      function getReading() {
+        // ---- TEMPERATURA ----
+        $.ajax({
+          url: urlTemp,
+          type: "GET",
+          headers: { Authorization: "Bearer " + accessToken },
+        })
+          .done((data) => {
+            let valor = parseFloat(data.result).toFixed(2);
+            gTemp.refresh(valor);
+          })
+          .fail(() => console.log("Error leyendo temperatura"));
+
+        // ---- HUMEDAD ----
+        $.ajax({
+          url: urlHum,
+          type: "GET",
+          headers: { Authorization: "Bearer " + accessToken },
+        })
+          .done((data) => {
+            let valor = parseFloat(data.result).toFixed(2);
+            gHum.refresh(valor);
+          })
+          .fail(() => console.log("Error leyendo humedad"));
+      }
+
+      setInterval(getReading, 1000);
+    </script>
+  </head>
+
+  <body>
+    <h1>Monitoreo IoT — Photon</h1>
+
+    <div id="contenedor">
+      <div id="gaugeTemp"></div>
+      <div id="gaugeHum"></div>
+    </div>
+
+    <script>
+      // ------------ GAUGE TEMPERATURA ------------
+      const gTemp = new JustGage({
+        id: "gaugeTemp",
+        value: 0,
+        min: 0,
+        max: 60,
+        title: "Temperatura (°C)",
+        label: "Temperatura",
+      });
+
+      // ------------ GAUGE HUMEDAD ------------
+      const gHum = new JustGage({
+        id: "gaugeHum",
+        value: 0,
+        min: 0,
+        max: 100,
+        title: "Humedad (%)",
+        label: "Humedad",
+      });
+
+      getReading();
+    </script>
+  </body>
+</html>
